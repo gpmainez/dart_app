@@ -1,89 +1,87 @@
-# 🎯 Dart Scorer & Checkout Engine
+# Dart Match & Checkout Engine
 
-A modern Flutter application designed for darts players, featuring an **intelligent checkout calculator** and a **physics-inspired AI bot engine**.
-
-![Flutter CI](https://github.com/your-username/dart_app/actions/workflows/flutter.yml/badge.svg)
-![Dart](https://img.shields.io/badge/Dart-3.x-blue.svg)
-![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B.svg)
-![License](https://img.shields.io/badge/License-MIT-green.svg)
+A Flutter application for scoring 501/301 darts matches, featuring an optimal checkout pathfinder and an AI opponent simulator based on real board geometry and error distributions.
 
 ---
 
-## 📌 Project Overview
+## Overview
 
-This project was built to provide a robust, responsive scoreboard and training companion for darts enthusiasts. Unlike standard counter apps, this project features:
-1. **Dynamic State-Space Search for Checkouts:** Finding optimal finishing combinations based on darts left and user target weights.
-2. **Polar-Coordinate Gaussian AI Bot:** An AI opponent whose throws are calculated using 2D normal distributions (Box-Muller transform) scaled to a target 3-dart average.
-3. **Clean Architecture & Decoupled Domain Engine:** Pure Dart domain logic separate from the Flutter UI layer, allowing 100% unit test coverage of game mechanics.
+The application serves as both a match scorer and a training tool. Instead of relying on static lookup tables for checkouts, it utilizes a graph/state-space search algorithm to calculate valid finishes dynamically based on remaining darts and individual player target weights.
+
+The domain logic is fully decoupled from the Flutter UI layer, allowing complete independent testing of game rules, scoring edge cases, and simulation models.
 
 ---
 
-## 🚀 Key Features & Engineering Highlights
+## Architecture & Design
 
-### 1. Optimal Checkout Engine (`Dijkstra / Branch-and-Bound`)
-* **State-Space Exploration:** Calculates the best path to 0 ending on a double (`SearchState`).
-* **Adaptive Weighting:** Learns player preferences over time (`rewardTarget` / `penalizeTarget`).
-* **Isolate Acceleration:** Utilizes Dart's `compute` to run complex combinatorial calculations off the main UI thread.
-* **Deterministic Boundary Validation:** Instant rejections for impossible checkouts (e.g. 159, 163, 165, 168, 169 or > 170).
+The codebase follows Clean Architecture principles, separating core domain logic from UI presentation:
 
-### 2. Gaussian Simulation Engine (AI Bot)
-* **Dartboard Polar Mapping:** Converts board millimetric dimensions into polar coordinates `(r, θ)`.
-* **Box-Muller Normal Distribution:** Simulates human error spread around the intended target with variance ($\sigma = \frac{1000}{\text{botAverage}}$).
-* **Sector Collision Detection:** Evaluates hits across singles, doubles, trebles, outer bull, and bullseye.
-
-### 3. Clean Architecture
 ```text
 lib/
-├── engine/                # Pure Dart domain logic (no UI dependencies)
-│   ├── checkout_calculator.dart  # PriorityQueue search & Isolate cache
-│   ├── match_manager.dart        # Game loop, bust rules, leg/set tracker
+├── engine/                # Domain logic (pure Dart, zero Flutter dependencies)
+│   ├── checkout_calculator.dart  # PriorityQueue-based state search & Isolate cache
+│   ├── match_manager.dart        # Match state machine, bust rules, leg/set tracker
 │   └── models/
-│       └── player.dart           # Player abstraction, Visit model, Bot simulation
-├── ui/                    # Flutter Presentation Layer
+│       └── player.dart           # Player abstraction, Visit statistics, Bot simulation
+├── ui/                    # Presentation layer (Flutter)
 │   ├── screens/           # MatchSetupScreen, MatchScreen
 │   └── widgets/           # DartPad, PlayerScoreCard
-└── main.dart              # Application entrypoint
+└── main.dart              # Application bootstrap and theme setup
 ```
 
 ---
 
-## 🧪 Testing & Code Quality
+## Core Capabilities
 
-The engine is covered by comprehensive unit tests verifying rules, edge cases, and board mathematics:
+### 1. Checkout Pathfinding Engine
+* **Algorithm:** PriorityQueue-based branch-and-bound state exploration (`SearchState`), finding the lowest-cost path to exactly zero ending on a double.
+* **Concurrency:** Runs heavy path calculations in a background Dart Isolate (`compute`) to ensure UI responsiveness (60/120 FPS).
+* **Deterministic Bounds:** Instant validation for impossible dart scores (e.g. 159, 163, 165, 168, 169, or > 170).
+* **Adaptive Weighting:** Adjusts target priorities based on the player's historical hit and miss rates.
+
+### 2. Physics-Based Bot Engine
+* **Board Modeling:** Maps standard dartboard dimensions (trebles, doubles, bulls) to a polar coordinate system $(r, \theta)$.
+* **Error Distribution:** Simulates throw variance using the Box-Muller transform for a 2D Gaussian distribution, where standard deviation $\sigma$ is scaled inversely to the bot's target 3-dart average.
+* **Collision Detection:** Translates coordinates back into segment hits (Single, Double, Treble, Bull, Miss).
+
+### 3. Match Management & Validation
+* Tracks 3-dart averages, checkout percentages, 180s, 140s+, and 100s+.
+* Strict enforcement of standard WDF/PDC rules (bust on $\le 1$ unless 0 on double).
+* Single-throw and full-visit undo functionality with state recovery.
+* Match configuration for customizable legs and sets format.
+
+---
+
+## Testing & Code Quality
+
+The domain engine is backed by a suite of unit tests covering scoring edge cases and algorithm correctness:
+
 ```bash
-# Run static analysis
+# Static analysis
 flutter analyze
 
-# Run unit tests
+# Execute test suite
 flutter test
 ```
 
-### Tested Scenarios:
-- ✅ Big Fish checkout (170 points $\rightarrow$ `T20 -> T20 -> Bullseye`).
-- ✅ Single-dart finishes (`D20`, `Bullseye`).
-- ✅ Impossible score rejections (169, 168, 165, 163, 159).
-- ✅ Bust conditions (reducing score to 1 or $<0$).
-- ✅ Match lifecycle (undo history, turn finalization, leg/set progression).
+### Coverage Scope:
+* Checkout calculation across boundary scores (170 Big Fish, 40, 50, impossible finishes).
+* Turn lifecycle, bust triggers, and undo operations.
+* Player statistics computation (3-dart average, double percentage).
+* Coordinate transformation and polar angle sector evaluation.
 
 ---
 
-## 🛠️ Getting Started
+## Getting Started
 
-### Prerequisites
-- Flutter SDK (3.x or later)
-- Dart SDK (3.x or later)
+### Requirements
+* Flutter SDK 3.x+
+* Dart SDK 3.x+
 
-### Installation
+### Setup
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/dart_app.git
-
-# Navigate to the project directory
+git clone https://github.com/gpmainez/dart_app.git
 cd dart_app
-
-# Fetch dependencies
 flutter pub get
-
-# Run the app
 flutter run
 ```
