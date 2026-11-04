@@ -13,8 +13,8 @@ class MatchSetupScreen extends StatefulWidget {
 
 class _MatchSetupScreenState extends State<MatchSetupScreen> {
   int _startingPoints = 501;
-  final int _legsToWin = 2;
-  final int _setsToWin = 1;
+  int _legsToWin = 2;
+  int _setsToWin = 1;
   bool _playAgainstBot = true;
   BotDifficulty _botDifficulty = BotDifficulty.medium;
 
@@ -25,7 +25,7 @@ class _MatchSetupScreenState extends State<MatchSetupScreen> {
         title: const Text('Dart Match Setup'),
         centerTitle: true,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -36,6 +36,8 @@ class _MatchSetupScreenState extends State<MatchSetupScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
+            const Text('Punkty początkowe:', style: TextStyle(color: Colors.grey)),
+            const SizedBox(height: 8),
             // Wybór punktów początkowych
             SegmentedButton<int>(
               segments: const [
@@ -45,9 +47,37 @@ class _MatchSetupScreenState extends State<MatchSetupScreen> {
               selected: {_startingPoints},
               onSelectionChanged: (set) => setState(() => _startingPoints = set.first),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+            // Format meczu: Legi do wygrania seta
+            const Text('Legi do wygrania seta (First to):', style: TextStyle(color: Colors.grey)),
+            const SizedBox(height: 8),
+            SegmentedButton<int>(
+              segments: const [
+                ButtonSegment(value: 1, label: Text('1')),
+                ButtonSegment(value: 2, label: Text('2')),
+                ButtonSegment(value: 3, label: Text('3')),
+                ButtonSegment(value: 5, label: Text('5')),
+              ],
+              selected: {_legsToWin},
+              onSelectionChanged: (set) => setState(() => _legsToWin = set.first),
+            ),
+            const SizedBox(height: 20),
+            // Format meczu: Sety do wygrania meczu
+            const Text('Sety do wygrania meczu (First to):', style: TextStyle(color: Colors.grey)),
+            const SizedBox(height: 8),
+            SegmentedButton<int>(
+              segments: const [
+                ButtonSegment(value: 1, label: Text('1')),
+                ButtonSegment(value: 2, label: Text('2')),
+                ButtonSegment(value: 3, label: Text('3')),
+              ],
+              selected: {_setsToWin},
+              onSelectionChanged: (set) => setState(() => _setsToWin = set.first),
+            ),
+            const SizedBox(height: 20),
             // Wybór trybu gry
             SwitchListTile(
+              contentPadding: EdgeInsets.zero,
               title: const Text('Graj przeciwko Botowi'),
               subtitle: Text(
                 _playAgainstBot
@@ -59,7 +89,7 @@ class _MatchSetupScreenState extends State<MatchSetupScreen> {
             ),
             if (_playAgainstBot) ...[
               const SizedBox(height: 8),
-              const Text('Poziom trudności bota:'),
+              const Text('Poziom trudności bota:', style: TextStyle(color: Colors.grey)),
               const SizedBox(height: 8),
               SegmentedButton<BotDifficulty>(
                 segments: const [
@@ -71,7 +101,7 @@ class _MatchSetupScreenState extends State<MatchSetupScreen> {
                 onSelectionChanged: (set) => setState(() => _botDifficulty = set.first),
               ),
             ],
-            const Spacer(),
+            const SizedBox(height: 36),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
