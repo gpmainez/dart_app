@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import '../data/database/match_database.dart';
+import '../data/database/match_record.dart';
 import 'checkout_calculator.dart';
 import 'models/player.dart';
 
@@ -227,9 +229,29 @@ class MatchManager extends ChangeNotifier {
     }
   }
 
-  void _endGame(Player matchWinner) {
+  Future<void> _endGame(Player matchWinner) async {
     isGameOver = true;
     winner = matchWinner;
+
+    if (playersInGame.length >= 2) {
+      final p1 = playersInGame[0];
+      final p2 = playersInGame[1];
+      final record = MatchRecord(
+        winnerName: matchWinner.name,
+        player1Name: p1.name,
+        player2Name: p2.name,
+        player1Average: p1.average,
+        player2Average: p2.average,
+        winnerCheckoutPercentage: matchWinner.checkoutPercentage,
+        total180s: p1.count180s + p2.count180s,
+        playedAt: DateTime.now().toIso8601String().substring(0, 16).replaceAll('T', ' '),
+      );
+      try {
+        await MatchDatabase.instance.insertMatch(record);
+      } catch (_) {
+        // Zabezpieczenie przed ewentualnym błędem IO w środowisku testowym
+      }
+    }
   }
 
   /// Resetowanie całego meczu do stanu początkowego

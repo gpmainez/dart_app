@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../engine/match_manager.dart';
 import '../../engine/models/player.dart';
+import 'match_history_screen.dart';
 import 'match_screen.dart';
 
 /// Ekran konfiguracji meczu (Gracz vs Bot, Gracz vs Gracz, wybór punktów i formatu).
@@ -24,6 +25,18 @@ class _MatchSetupScreenState extends State<MatchSetupScreen> {
       appBar: AppBar(
         title: const Text('Dart Match Setup'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'Historia meczów',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MatchHistoryScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),

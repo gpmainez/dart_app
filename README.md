@@ -18,13 +18,15 @@ The codebase follows Clean Architecture principles, separating core domain logic
 
 ```text
 lib/
+├── data/                  # Data persistence layer
+│   └── database/          # SQLite database helper & MatchRecord model
 ├── engine/                # Domain logic (pure Dart, zero Flutter dependencies)
 │   ├── checkout_calculator.dart  # PriorityQueue-based state search & Isolate cache
 │   ├── match_manager.dart        # Match state machine, bust rules, leg/set tracker
 │   └── models/
 │       └── player.dart           # Player abstraction, Visit statistics, Bot simulation
 ├── ui/                    # Presentation layer (Flutter)
-│   ├── screens/           # MatchSetupScreen, MatchScreen
+│   ├── screens/           # MatchSetupScreen, MatchScreen, MatchHistoryScreen
 │   └── widgets/           # DartPad, PlayerScoreCard
 └── main.dart              # Application bootstrap and theme setup
 ```
@@ -49,6 +51,11 @@ lib/
 * Strict enforcement of standard WDF/PDC rules (bust on $\le 1$ unless 0 on double).
 * Single-throw and full-visit undo functionality with state recovery.
 * Match configuration for customizable legs and sets format.
+
+### 4. Local SQLite Persistence (Offline-First)
+* Stores finished match outcomes, player statistics, 180 counts, and timestamps in a local SQLite database (`sqflite`).
+* Match history screen with summary cards and real-time database query operations.
+* Covered by automated in-memory SQLite unit tests using `sqflite_common_ffi`.
 
 ---
 
